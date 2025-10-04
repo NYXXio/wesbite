@@ -10,6 +10,11 @@ const app = express();
 app.use(express.json());
 app.use(cors()); // Allow frontend requests
 
+// Health check route
+app.get("/", (req, res) => {
+  res.json({ message: "Backend is running ✅" });
+});
+
 // Google Auth setup
 const auth = new GoogleAuth({
   keyFile: "service-account.json", // service account key file
@@ -27,9 +32,8 @@ app.post("/api/reservations", async (req, res) => {
   }
 
   try {
-    // Reservation duration (2 hours default)
     const start = new Date(startDateTime);
-    const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+    const end = new Date(start.getTime() + 2 * 60 * 60 * 1000); // 2 hours
 
     // Check for conflicts
     const events = await calendar.events.list({
@@ -48,14 +52,8 @@ app.post("/api/reservations", async (req, res) => {
     const event = {
       summary: `Reservation: ${name} (${partySize || "N/A"} guests)`,
       description: `Email: ${email}\nPhone: ${phone}\nNotes: ${notes || "None"}`,
-      start: {
-        dateTime: start.toISOString(),
-        timeZone: "Europe/Riga", // adjust to your timezone
-      },
-      end: {
-        dateTime: end.toISOString(),
-        timeZone: "Europe/Riga",
-      },
+      start: { dateTime: start.toISOString(), timeZone: "Europe/Riga" },
+      end: { dateTime: end.toISOString(), timeZone: "Europe/Riga" },
       attendees: email ? [{ email }] : [],
     };
 
